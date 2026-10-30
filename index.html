@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Densifi | Edge Vision & Retail Telemetry Suite</title>
+  <!-- Google Fonts & Tailwind CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          colors: {
+            densifi: {
+              dark: '#090D16',        /* Obsidian Dark */
+              emerald: '#10B981',     /* Vision Emerald Accent */
+              emeraldlight: '#ECFDF5',/* Soft Emerald Tint */
+              amber: '#F59E0B',       /* Diagnostic Amber */
+              blue: '#3B82F6',        /* Branch Comparative Blue */
+              purple: '#8B5CF6',      /* Branch Comparative Purple */
+              bg: '#F4F6F8'          /* Clean Background */
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F4F6F8; }
+    .obsidian-gradient { background: linear-gradient(135deg, #090D16 0%, #1E293B 100%); }
+    .emerald-gradient { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+    .pulse-animation { animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+      0% { transform: scale(0.98); opacity: 0.8; }
+      50% { transform: scale(1.02); opacity: 1; }
+      100% { transform: scale(0.98); opacity: 0.8; }
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased h-screen w-screen overflow-hidden flex relative bg-[#F4F6F8]">
+
+  <!-- Notification Toast Message UI -->
+  <div id="toast-notification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-densifi-dark border border-densifi-emerald/40 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+    <div class="p-2 bg-densifi-emerald/20 text-densifi-emerald rounded-lg">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div>
+      <p id="toast-title" class="font-bold text-xs text-white">System Alert</p>
+      <p id="toast-message" class="text-[11px] text-slate-300">Action performed successfully.</p>
+    </div>
+  </div>
+
+  <!-- ================= STAFF LOGIN SCREEN ================= -->
+  <div id="login-screen" class="fixed inset-0 z-50 obsidian-gradient flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-700/30 text-center relative overflow-hidden">
+      <!-- Ambient Vision Glow -->
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-densifi-emerald/20 rounded-full blur-2xl"></div>
+
+      <!-- Densifi Brand Logo -->
+      <div class="flex flex-col items-center justify-center mb-6">
+        <div class="w-16 h-16 bg-densifi-dark text-densifi-emerald rounded-2xl flex items-center justify-center shadow-lg mb-3 border border-densifi-emerald/30">
+          <svg class="w-10 h-10 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        </div>
+        <h1 class="text-3xl font-extrabold tracking-wider text-densifi-dark uppercase">DENSIFI</h1>
+        <p class="text-xs text-slate-500 font-medium tracking-wide mt-1">Edge Hardware & Store Telemetry Suite</p>
+      </div>
+
+      <!-- Login Form -->
+      <form onsubmit="handleLogin(event)" class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Staff ID / Username</label>
+          <input type="text" id="login-user" required value="densifi_admin" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-densifi-emerald focus:outline-none bg-slate-50">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+          <input type="password" id="login-pass" required value="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-densifi-emerald focus:outline-none bg-slate-50">
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-densifi-dark hover:bg-slate-800 text-densifi-emerald font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-md border border-densifi-emerald/30 mt-2">
+          Secure Node Access Sign In
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-400">
+        Restricted Access. Authorized Densifi Edge Gateways Only.
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DASHBOARD APP MAIN WRAPPER ================= -->
+  <div id="app-wrapper" class="hidden flex-1 flex w-full h-full overflow-hidden">
+
+    <!-- LEFT SIDEBAR NAVIGATION -->
+    <aside class="w-64 bg-densifi-dark text-slate-100 flex flex-col shrink-0 h-full border-r border-slate-800 shadow-xl overflow-y-auto">
+      
+      <!-- Densifi Brand Header -->
+      <div class="h-20 flex items-center px-6 border-b border-slate-800 gap-3 shrink-0">
+        <div class="bg-slate-900 text-densifi-emerald p-2 rounded-xl shadow-md border border-densifi-emerald/40">
+          <svg class="w-6 h-6 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-white text-lg tracking-widest leading-none uppercase">DENSIFI</h1>
+          <p class="text-[10px] text-densifi-emerald font-medium mt-1 tracking-wider uppercase">Biba Vision Suite</p>
+        </div>
+      </div>
+
+      <!-- Navigation Menu Items -->
+      <nav class="flex-1 p-4 space-y-1.5 text-xs font-semibold">
+        <div class="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Main Navigation</div>
+        
+        <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-white bg-densifi-emerald font-bold shadow-sm transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          Overview Dashboard
+        </button>
+
+        <button onclick="navigateTo('compare')" id="nav-compare" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4 text-densifi-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Multi-Branch Comparison
+        </button>
+
+        <button onclick="navigateTo('camera')" id="nav-camera" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Live Doorway Stream
+        </button>
+
+        <button onclick="navigateTo('logs')" id="nav-logs" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Audit Snapshot Logs
+        </button>
+
+        <button onclick="navigateTo('analytics')" id="nav-analytics" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+          Analytics & Insights
+        </button>
+
+        <div class="px-3 pt-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">System & Hardware</div>
+
+        <button onclick="navigateTo('hardware')" id="nav-hardware" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+          Hardware & PIR Sensor
+        </button>
+
+        <button onclick="navigateTo('errors')" id="nav-errors" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          System Fault & Errors <span id="error-badge-count" class="ml-auto bg-amber-500 text-slate-950 px-1.5 py-0.5 text-[9px] rounded-full font-bold">1</span>
+        </button>
+      </nav>
+
+      <!-- Active Staff Profile Section -->
+      <div class="p-4 border-t border-slate-800 bg-black/40 text-xs shrink-0">
+        <div class="flex items-center justify-between">
+          <div>
+            <p id="active-staff-name" class="font-bold text-white">Admin: densifi_admin</p>
+            <p id="active-staff-branch" class="text-[10px] text-densifi-emerald mt-0.5">Biba Klang</p>
+          </div>
+          <button onclick="logout()" class="text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-lg text-slate-200 font-semibold transition">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+
+      <!-- TOP HEADER BAR WITH GLOBAL BRANCH FILTER & COMPARISON BUTTON -->
+      <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
+        <div class="flex items-center gap-6">
+          <h2 id="page-title" class="text-xl font-bold text-slate-900">Overview Dashboard</h2>
+          
+          <!-- Store Selection Dropdown & Multi-Branch Comparison Button -->
+          <div class="flex items-center gap-4 border-l border-slate-200 pl-6">
+            <div class="flex items-center gap-2">
+              <label for="store-filter" class="text-xs font-bold text-densifi-emerald uppercase tracking-wider">Outlet Branch:</label>
+              <select id="store-filter" onchange="filterStoreData(this.value)" class="bg-slate-100 border border-slate-300 text-slate-900 text-xs rounded-xl p-2 font-bold focus:ring-2 focus:ring-densifi-emerald shadow-sm cursor-pointer">
+                <option value="ALL">🛍️ All Outlets Combined (Biba Total)</option>
+                <option value="STORE_KLANG" selected>📍 Biba Klang</option>
+                <option value="STORE_BRICKFIELDS">📍 Biba Brickfields</option>
+                <option value="STORE_1UTAMA">📍 Biba 1 Utama</option>
+              </select>
+            </div>
+
+            <button onclick="navigateTo('compare')" class="flex items-center gap-2 bg-gradient-to-r from-densifi-dark to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white border border-densifi-emerald/40 px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition hover:shadow-md group">
+              <span class="text-base group-hover:scale-110 transition-transform">📊</span>
+              <span class="text-densifi-emerald">Compare All 3 Outlets</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+            🟢 Live Telemetry Connected
+          </span>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENTS (SCROLLABLE CONTAINER) -->
+      <main class="p-8 flex-1 overflow-y-auto min-h-0">
+
+        <!-- ================= PAGE 1: OVERVIEW DASHBOARD ================= -->
+        <section id="page-dashboard" class="page-content space-y-6">
+          
+          <!-- Executive KPI Bar -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm cursor-pointer hover:border-densifi-emerald transition" onclick="openStoreDetails(selectedStore)">
+              <span id="dash-total-title" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Branch Footfall Today</span>
+              <div class="mt-2 flex items-baseline justify-between">
+                <span id="dash-total" class="text-3xl font-extrabold text-slate-900">142</span>
+                <span id="dash-total-badge" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">Active Node</span>
+              </div>
+              <p class="text-[10px] text-densifi-emerald font-semibold mt-2">🔍 Click to inspect node diagnostics</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm cursor-pointer hover:border-densifi-emerald transition" onclick="openStoreDetails(selectedStore)">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Current Boutique Occupancy</span>
+              <div class="mt-2 flex items-baseline justify-between">
+                <span id="dash-occupancy" class="text-3xl font-extrabold text-emerald-600">18</span>
+                <span id="dash-max-label" class="text-xs font-semibold text-slate-500">Capacity: 50</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
+                <div id="dash-occupancy-bar" class="bg-densifi-emerald h-2 rounded-full transition-all duration-300" style="width: 36%;"></div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Company Total (3 Outlets)</span>
+              <div class="mt-2 flex items-baseline justify-between">
+                <span id="dash-company-total" class="text-3xl font-extrabold text-slate-900">388</span>
+                <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">Active Stream</span>
+              </div>
+              <p class="text-[10px] text-slate-400 font-semibold mt-2">Live combined store traffic</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Top Performing Branch</span>
+              <div class="mt-2 flex items-baseline justify-between">
+                <span id="top-branch-name" class="text-xl font-extrabold text-densifi-dark">Biba Klang</span>
+                <span id="top-branch-count" class="text-xs font-bold text-emerald-600">142 visits</span>
+              </div>
+              <p class="text-[10px] text-slate-400 font-semibold mt-2">Highest conversion today</p>
+            </div>
+          </div>
+
+          <!-- Store-by-Store Real-Time Comparison Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Store Card 1 -->
+            <div id="card-STORE_KLANG" class="bg-white p-5 rounded-2xl border-2 border-densifi-emerald shadow-sm space-y-3 cursor-pointer hover:bg-emerald-50/30 transition" onclick="openStoreDetails('STORE_KLANG')">
+              <div class="flex justify-between items-center">
+                <h4 class="font-bold text-slate-900 text-sm">📍 Biba Klang</h4>
+                <span id="status-STORE_KLANG" class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md">ONLINE</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
+                <div><span class="text-slate-400">Today Count:</span> <strong id="card-STORE_KLANG-total" class="block text-base text-slate-900 font-extrabold">142</strong></div>
+                <div><span class="text-slate-400">Occupancy:</span> <strong id="card-STORE_KLANG-occ" class="block text-base text-emerald-600 font-extrabold">18</strong></div>
+              </div>
+              <div class="text-[11px] text-densifi-emerald font-bold flex items-center justify-between pt-1">
+                <span>View Node Telemetry</span>
+                <span>→</span>
+              </div>
+            </div>
+
+            <!-- Store Card 2 -->
+            <div id="card-STORE_BRICKFIELDS" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 cursor-pointer hover:bg-slate-50 transition" onclick="openStoreDetails('STORE_BRICKFIELDS')">
+              <div class="flex justify-between items-center">
+                <h4 class="font-bold text-slate-900 text-sm">📍 Biba Brickfields</h4>
+                <span id="status-STORE_BRICKFIELDS" class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md">ONLINE</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
+                <div><span class="text-slate-400">Today Count:</span> <strong id="card-STORE_BRICKFIELDS-total" class="block text-base text-slate-900 font-extrabold">118</strong></div>
+                <div><span class="text-slate-400">Occupancy:</span> <strong id="card-STORE_BRICKFIELDS-occ" class="block text-base text-emerald-600 font-extrabold">12</strong></div>
+              </div>
+              <div class="text-[11px] text-densifi-emerald font-bold flex items-center justify-between pt-1">
+                <span>View Node Telemetry</span>
+                <span>→</span>
+              </div>
+            </div>
+
+            <!-- Store Card 3 -->
+            <div id="card-STORE_1UTAMA" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 cursor-pointer hover:bg-slate-50 transition" onclick="openStoreDetails('STORE_1UTAMA')">
+              <div class="flex justify-between items-center">
+                <h4 class="font-bold text-slate-900 text-sm">📍 Biba 1 Utama</h4>
+                <span id="status-STORE_1UTAMA" class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md">ONLINE</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
+                <div><span class="text-slate-400">Today Count:</span> <strong id="card-STORE_1UTAMA-total" class="block text-base text-slate-900 font-extrabold">128</strong></div>
+                <div><span class="text-slate-400">Occupancy:</span> <strong id="card-STORE_1UTAMA-occ" class="block text-base text-emerald-600 font-extrabold">15</strong></div>
+              </div>
+              <div class="text-[11px] text-densifi-emerald font-bold flex items-center justify-between pt-1">
+                <span>View Node Telemetry</span>
+                <span>→</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dual Comparative Data Visualization Section -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 id="dash-chart-title" class="text-sm font-bold text-slate-900">Hourly Customer Flow Breakdown</h3>
+                <button onclick="navigateTo('compare')" class="text-xs font-bold text-densifi-emerald hover:underline">Full Multi-Branch Breakdown →</button>
+              </div>
+              <div class="relative h-64 w-full">
+                <canvas id="dashChart"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3 flex flex-col justify-between">
+              <h3 class="text-sm font-bold text-slate-900">Footfall Distribution Share</h3>
+              <div class="relative h-52 w-full flex items-center justify-center">
+                <canvas id="shareChart"></canvas>
+              </div>
+              <div id="share-chart-caption" class="text-[11px] text-slate-500 font-medium text-center">Biba Klang leads overall entries</div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ================= PAGE: MULTI-BRANCH COMPARISON VIEW ================= -->
+        <section id="page-compare" class="page-content hidden space-y-6">
+          
+          <!-- Banner Header -->
+          <div class="bg-gradient-to-r from-densifi-dark via-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-md border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <span class="text-[10px] font-extrabold text-densifi-emerald bg-densifi-emerald/10 border border-densifi-emerald/30 px-2.5 py-1 rounded-md uppercase tracking-wider">Multi-Branch Telemetry Matrix</span>
+              <h3 class="text-xl font-black mt-2">Biba 3-Branch Performance Comparison</h3>
+              <p class="text-xs text-slate-400 mt-1">Real-time side-by-side analysis across Biba Klang, Biba Brickfields, and Biba 1 Utama</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="exportCSV()" class="bg-densifi-emerald hover:bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition">Export Comparative Report</button>
+            </div>
+          </div>
+
+          <!-- Side-by-Side 3 Outlet Metric Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Outlet 1: Biba Klang -->
+            <div onclick="openStoreDetails('STORE_KLANG')" class="bg-white p-6 rounded-2xl border-2 border-densifi-emerald shadow-sm space-y-4 cursor-pointer hover:shadow-lg transition">
+              <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                  <h4 class="font-extrabold text-slate-900 text-base">📍 Biba Klang</h4>
+                  <p class="text-[11px] text-slate-400 font-mono">Gateway ID: #NODE-KLG-01</p>
+                </div>
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-lg">RANK #1</span>
+              </div>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Today Total Visitors:</span>
+                  <span id="compare-STORE_KLANG-total" class="text-xl font-extrabold text-slate-900">142</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Current Occupancy:</span>
+                  <span id="compare-STORE_KLANG-occ" class="text-base font-extrabold text-densifi-emerald">18 / 50</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Peak Traffic Hour:</span>
+                  <span class="font-bold text-slate-800">12:00 PM – 1:00 PM</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Avg Store Dwell Time:</span>
+                  <span class="font-bold text-slate-800">18.4 mins</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Outlet 2: Biba Brickfields -->
+            <div onclick="openStoreDetails('STORE_BRICKFIELDS')" class="bg-white p-6 rounded-2xl border-2 border-blue-500 shadow-sm space-y-4 cursor-pointer hover:shadow-lg transition">
+              <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                  <h4 class="font-extrabold text-slate-900 text-base">📍 Biba Brickfields</h4>
+                  <p class="text-[11px] text-slate-400 font-mono">Gateway ID: #NODE-BRK-02</p>
+                </div>
+                <span class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2.5 py-1 rounded-lg">RANK #3</span>
+              </div>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Today Total Visitors:</span>
+                  <span id="compare-STORE_BRICKFIELDS-total" class="text-xl font-extrabold text-slate-900">118</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Current Occupancy:</span>
+                  <span id="compare-STORE_BRICKFIELDS-occ" class="text-base font-extrabold text-blue-600">12 / 40</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Peak Traffic Hour:</span>
+                  <span class="font-bold text-slate-800">1:00 PM – 2:00 PM</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Avg Store Dwell Time:</span>
+                  <span class="font-bold text-slate-800">15.2 mins</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Outlet 3: Biba 1 Utama -->
+            <div onclick="openStoreDetails('STORE_1UTAMA')" class="bg-white p-6 rounded-2xl border-2 border-purple-500 shadow-sm space-y-4 cursor-pointer hover:shadow-lg transition">
+              <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                  <h4 class="font-extrabold text-slate-900 text-base">📍 Biba 1 Utama</h4>
+                  <p class="text-[11px] text-slate-400 font-mono">Gateway ID: #NODE-1UT-03</p>
+                </div>
+                <span class="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2.5 py-1 rounded-lg">RANK #2</span>
+              </div>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Today Total Visitors:</span>
+                  <span id="compare-STORE_1UTAMA-total" class="text-xl font-extrabold text-slate-900">128</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Current Occupancy:</span>
+                  <span id="compare-STORE_1UTAMA-occ" class="text-base font-extrabold text-purple-600">15 / 60</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Peak Traffic Hour:</span>
+                  <span class="font-bold text-slate-800">12:00 PM – 1:00 PM</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-semibold">Avg Store Dwell Time:</span>
+                  <span class="font-bold text-slate-800">21.5 mins</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Simultaneous Multi-Line Overlay Comparison Graph -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+              <div>
+                <h3 class="text-base font-bold text-slate-900">Hourly Comparative Footfall Overlay</h3>
+                <p class="text-xs text-slate-500">Real-time simultaneous hourly customer traffic graph for all 3 outlets</p>
+              </div>
+              <div class="flex items-center gap-4 text-xs font-bold">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-densifi-emerald inline-block"></span> Biba Klang</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Biba Brickfields</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span> Biba 1 Utama</span>
+              </div>
+            </div>
+            <div class="relative h-80 w-full">
+              <canvas id="multiCompareChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE 2: LIVE CAMERA STREAM ================= -->
+        <section id="page-camera" class="page-content hidden space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 id="cam-title" class="text-base font-bold text-slate-900">Boutique Entrance Overhead Camera (Biba Klang)</h3>
+                <p class="text-xs text-slate-500">Densifi Edge Vision Node - Active Counter Tripwire</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg font-bold">1080p @ 30FPS</span>
+              </div>
+            </div>
+
+            <!-- Interactive Live Camera Simulation Box -->
+            <div class="relative bg-slate-950 rounded-2xl overflow-hidden h-[420px] flex items-center justify-center border-2 border-densifi-emerald/30 group">
+              <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" class="w-full h-full object-cover opacity-80" alt="Biba Store Feed">
+              
+              <!-- Tripwire Line -->
+              <div class="absolute inset-x-0 top-1/2 border-b-2 border-dashed border-densifi-emerald shadow-lg"></div>
+              
+              <!-- Live Overlay Indicators -->
+              <div class="absolute top-4 left-4 bg-black/80 text-densifi-emerald text-xs px-3 py-1.5 rounded-lg font-mono font-bold border border-densifi-emerald/40 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-densifi-emerald animate-ping"></span>
+                <span>TRIPWIRE: ACTIVE (Y = 240px)</span>
+              </div>
+
+              <!-- Real-time Interactive Counter Controls Overlay -->
+              <div class="absolute bottom-4 left-4 right-4 bg-black/85 backdrop-blur-md text-white p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-8">
+                  <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Today Count</span>
+                    <strong id="cam-count-today" class="text-2xl text-densifi-emerald font-extrabold">142</strong>
+                  </div>
+                  <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Current In-Store</span>
+                    <strong id="cam-count-occ" class="text-2xl text-white font-extrabold">18</strong>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-densifi-emerald font-mono bg-slate-900/80 px-3 py-1.5 rounded-lg border border-densifi-emerald/30">
+                  <span class="w-2 h-2 rounded-full bg-densifi-emerald animate-ping"></span>
+                  <span>AUTOMATIC_COUNTER_STREAMING</span>
+                </div>
+              </div>
+
+              <!-- Visual Motion Detection Box -->
+              <div id="cam-detection-box" class="hidden absolute top-1/3 left-1/2 -translate-x-1/2 w-36 h-48 border-2 border-emerald-400 bg-emerald-500/20 rounded-xl flex items-start p-2 shadow-2xl transition-all">
+                <span class="bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">CUSTOMER DETECTED</span>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center text-xs text-slate-500 pt-2">
+              <span>PIR Motion Detector: GPIO Pin 17 | Edge AI Confidence: 98.4%</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE 3: AUDIT SNAPSHOT LOGS ================= -->
+        <section id="page-logs" class="page-content hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 class="text-base font-bold text-slate-900">Customer Entry Snapshot Audit Logs</h3>
+                <p class="text-xs text-slate-500">Click any record row to inspect full verification snapshot and details</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <button onclick="exportCSV()" class="bg-densifi-dark hover:bg-slate-800 text-densifi-emerald border border-densifi-emerald/30 px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm">Export Audit CSV</button>
+              </div>
+            </div>
+
+            <table class="w-full text-left text-xs text-slate-700">
+              <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
+                <tr>
+                  <th class="px-6 py-3.5">Event ID</th>
+                  <th class="px-6 py-3.5">Boutique Branch</th>
+                  <th class="px-6 py-3.5">Timestamp</th>
+                  <th class="px-6 py-3.5">Snapshot</th>
+                  <th class="px-6 py-3.5">Sensor Input</th>
+                  <th class="px-6 py-3.5">Action</th>
+                </tr>
+              </thead>
+              <tbody id="logs-table-body" class="divide-y divide-slate-100 font-medium">
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= PAGE 4: ANALYTICS & REPORTS ================= -->
+        <section id="page-analytics" class="page-content hidden space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <h3 class="text-base font-bold text-slate-900">Historical Footfall Analytics</h3>
+                <p id="analytics-subtitle" class="text-xs text-slate-500 mt-0.5">Weekly customer trends across Biba locations</p>
+              </div>
+              
+              <div class="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 text-xs font-semibold text-slate-700">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Report Interval: <strong id="analytics-timestamp" class="font-mono text-slate-900">2026-10-01 to 2026-10-19</strong></span>
+              </div>
+            </div>
+
+            <!-- Analytics Option Toolbar -->
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              
+              <div class="flex items-center gap-1 bg-slate-200 p-1 rounded-xl text-xs font-bold">
+                <button onclick="setAnalyticsMode('daily')" id="btn-mode-daily" class="analytics-mode-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">Daily</button>
+                <button onclick="setAnalyticsMode('weekly')" id="btn-mode-weekly" class="analytics-mode-btn px-3 py-1.5 rounded-lg transition bg-densifi-emerald text-white shadow-sm">Weekly</button>
+                <button onclick="setAnalyticsMode('monthly')" id="btn-mode-monthly" class="analytics-mode-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">Monthly</button>
+                <button onclick="setAnalyticsMode('yearly')" id="btn-mode-yearly" class="analytics-mode-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">Yearly</button>
+              </div>
+
+              <!-- Interactive Date Picker Controls -->
+              <div class="flex flex-wrap items-center gap-3 text-xs">
+                <div class="flex items-center gap-2">
+                  <label class="font-bold text-slate-500">From:</label>
+                  <input type="date" id="analytics-start-date" value="2026-10-01" onchange="handleDateChange()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono text-xs focus:ring-2 focus:ring-densifi-emerald">
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="font-bold text-slate-500">To:</label>
+                  <input type="date" id="analytics-end-date" value="2026-10-19" onchange="handleDateChange()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono text-xs focus:ring-2 focus:ring-densifi-emerald">
+                </div>
+                <button onclick="resetAnalyticsDates()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold transition">Reset Dates</button>
+              </div>
+            </div>
+
+            <!-- Historical Analytics Chart Canvas -->
+            <div class="relative h-80 w-full">
+              <canvas id="analyticsChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE 5: HARDWARE & PIR TELEMETRY ================= -->
+        <section id="page-hardware" class="page-content hidden space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Hardware Telemetry & Sensor Diagnostics</h3>
+              <p class="text-xs text-slate-500">Real-time status of connected Densifi Vision Gateways</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="border border-slate-200 rounded-2xl p-5 space-y-3 bg-slate-50/50">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-sm text-slate-900">Biba Klang Gateway</span>
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">ONLINE</span>
+                </div>
+                <div class="text-xs space-y-2 pt-2 border-t border-slate-200 text-slate-600">
+                  <p class="flex justify-between"><span>IP Address:</span> <strong class="font-mono text-slate-900">192.168.1.101</strong></p>
+                  <p class="flex justify-between"><span>Sensor Temp:</span> <strong class="font-mono text-slate-900">41.2°C</strong></p>
+                  <p class="flex justify-between"><span>CPU Utilization:</span> <strong class="font-mono text-slate-900">22%</strong></p>
+                  <p class="flex justify-between"><span>RAM Usage:</span> <strong class="font-mono text-slate-900">1.2 GB / 4 GB</strong></p>
+                </div>
+                <button onclick="openStoreDetails('STORE_KLANG')" class="w-full mt-3 bg-densifi-dark hover:bg-slate-800 text-densifi-emerald font-bold text-xs py-2 rounded-xl border border-densifi-emerald/30 transition">
+                  Run Diagnostic Check
+                </button>
+              </div>
+
+              <div class="border border-slate-200 rounded-2xl p-5 space-y-3 bg-slate-50/50">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-sm text-slate-900">Biba Brickfields Gateway</span>
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">ONLINE</span>
+                </div>
+                <div class="text-xs space-y-2 pt-2 border-t border-slate-200 text-slate-600">
+                  <p class="flex justify-between"><span>IP Address:</span> <strong class="font-mono text-slate-900">192.168.1.102</strong></p>
+                  <p class="flex justify-between"><span>Sensor Temp:</span> <strong class="font-mono text-slate-900">43.8°C</strong></p>
+                  <p class="flex justify-between"><span>CPU Utilization:</span> <strong class="font-mono text-slate-900">31%</strong></p>
+                  <p class="flex justify-between"><span>RAM Usage:</span> <strong class="font-mono text-slate-900">1.6 GB / 4 GB</strong></p>
+                </div>
+                <button onclick="openStoreDetails('STORE_BRICKFIELDS')" class="w-full mt-3 bg-densifi-dark hover:bg-slate-800 text-densifi-emerald font-bold text-xs py-2 rounded-xl border border-densifi-emerald/30 transition">
+                  Run Diagnostic Check
+                </button>
+              </div>
+
+              <div class="border border-slate-200 rounded-2xl p-5 space-y-3 bg-slate-50/50">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-sm text-slate-900">Biba 1 Utama Gateway</span>
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">ONLINE</span>
+                </div>
+                <div class="text-xs space-y-2 pt-2 border-t border-slate-200 text-slate-600">
+                  <p class="flex justify-between"><span>IP Address:</span> <strong class="font-mono text-slate-900">192.168.1.103</strong></p>
+                  <p class="flex justify-between"><span>Sensor Temp:</span> <strong class="font-mono text-slate-900">39.5°C</strong></p>
+                  <p class="flex justify-between"><span>CPU Utilization:</span> <strong class="font-mono text-slate-900">18%</strong></p>
+                  <p class="flex justify-between"><span>RAM Usage:</span> <strong class="font-mono text-slate-900">1.1 GB / 4 GB</strong></p>
+                </div>
+                <button onclick="openStoreDetails('STORE_1UTAMA')" class="w-full mt-3 bg-densifi-dark hover:bg-slate-800 text-densifi-emerald font-bold text-xs py-2 rounded-xl border border-densifi-emerald/30 transition">
+                  Run Diagnostic Check
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE 6: SYSTEM FAULT & ERROR LOGS ================= -->
+        <section id="page-errors" class="page-content hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            
+            <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between md:items-center gap-4 bg-slate-50">
+              <div>
+                <h3 class="text-base font-bold text-slate-900">System Fault & Incident Diagnostics</h3>
+                <p class="text-xs text-slate-500">Switch tabs to view current active issues or refer to the full history of resolved problems</p>
+              </div>
+
+              <!-- Interactive Tab Switches -->
+              <div class="flex items-center gap-2 bg-slate-200/80 p-1 rounded-xl text-xs font-bold shrink-0">
+                <button onclick="setFaultTab('current')" id="btn-fault-current" class="px-4 py-2 rounded-lg transition bg-densifi-emerald text-white shadow-sm flex items-center gap-2">
+                  <span>🔴 Current Active Faults</span>
+                  <span id="badge-active-count" class="bg-white text-emerald-800 text-[10px] font-mono px-1.5 py-0.5 rounded-md">2</span>
+                </button>
+                <button onclick="setFaultTab('history')" id="btn-fault-history" class="px-4 py-2 rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center gap-2">
+                  <span>📜 History of Problems</span>
+                  <span id="badge-resolved-count" class="bg-slate-300 text-slate-800 text-[10px] font-mono px-1.5 py-0.5 rounded-md">3</span>
+                </button>
+              </div>
+            </div>
+
+            <table class="w-full text-left text-xs text-slate-700">
+              <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
+                <tr>
+                  <th class="px-6 py-3.5">Fault ID</th>
+                  <th class="px-6 py-3.5">Timestamp</th>
+                  <th class="px-6 py-3.5">Boutique Branch</th>
+                  <th class="px-6 py-3.5">Category</th>
+                  <th class="px-6 py-3.5">Fault Description</th>
+                  <th class="px-6 py-3.5">Severity</th>
+                  <th class="px-6 py-3.5">Resolution Status</th>
+                  <th class="px-6 py-3.5">Action</th>
+                </tr>
+              </thead>
+              <tbody id="errors-table-body" class="divide-y divide-slate-100 font-mono">
+              </tbody>
+            </table>
+
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ================= MULTI-BRANCH COMPARISON MODAL DRAWER ================= -->
+  <div id="compare-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-5xl w-full shadow-2xl overflow-hidden border border-slate-200">
+      <div class="bg-densifi-dark text-white p-6 flex justify-between items-center border-b border-slate-800">
+        <div>
+          <span class="text-[10px] uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-md bg-densifi-emerald text-slate-950">CROSS-BRANCH ANALYTICS</span>
+          <h3 class="text-lg font-bold mt-1">Multi-Outlet Comparative Dashboard</h3>
+          <p class="text-xs text-slate-400">Click any outlet card below to inspect its graph data directly in this view</p>
+        </div>
+        <button onclick="closeCompareModal()" class="text-white/70 hover:text-white p-1 rounded-lg bg-black/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div id="modal-card-STORE_KLANG" onclick="selectModalBranch('STORE_KLANG')" class="p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50/20 space-y-2 cursor-pointer transition hover:scale-[1.01]">
+            <div class="flex justify-between items-center">
+              <h4 class="font-bold text-slate-900 text-sm">📍 Biba Klang</h4>
+              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded">LEADER</span>
+            </div>
+            <div class="text-xs space-y-1 pt-1 border-t border-slate-200">
+              <p>Footfall Today: <strong class="text-slate-900 font-bold">142</strong></p>
+              <p>Live Occupancy: <strong class="text-emerald-600 font-bold">18 / 50</strong></p>
+              <p>Peak Hour: <strong class="text-slate-800 font-mono">12:00 PM - 1:00 PM</strong></p>
+            </div>
+          </div>
+
+          <div id="modal-card-STORE_BRICKFIELDS" onclick="selectModalBranch('STORE_BRICKFIELDS')" class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2 cursor-pointer transition hover:scale-[1.01]">
+            <div class="flex justify-between items-center">
+              <h4 class="font-bold text-slate-900 text-sm">📍 Biba Brickfields</h4>
+              <span class="bg-slate-200 text-slate-700 text-[10px] font-extrabold px-2 py-0.5 rounded">STABLE</span>
+            </div>
+            <div class="text-xs space-y-1 pt-1 border-t border-slate-200">
+              <p>Footfall Today: <strong class="text-slate-900 font-bold">118</strong></p>
+              <p>Live Occupancy: <strong class="text-emerald-600 font-bold">12 / 40</strong></p>
+              <p>Peak Hour: <strong class="text-slate-800 font-mono">1:00 PM - 2:00 PM</strong></p>
+            </div>
+          </div>
+
+          <div id="modal-card-STORE_1UTAMA" onclick="selectModalBranch('STORE_1UTAMA')" class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2 cursor-pointer transition hover:scale-[1.01]">
+            <div class="flex justify-between items-center">
+              <h4 class="font-bold text-slate-900 text-sm">📍 Biba 1 Utama</h4>
+              <span class="bg-slate-200 text-slate-700 text-[10px] font-extrabold px-2 py-0.5 rounded">STABLE</span>
+            </div>
+            <div class="text-xs space-y-1 pt-1 border-t border-slate-200">
+              <p>Footfall Today: <strong class="text-slate-900 font-bold">128</strong></p>
+              <p>Live Occupancy: <strong class="text-emerald-600 font-bold">15 / 60</strong></p>
+              <p>Peak Hour: <strong class="text-slate-800 font-mono">2:00 PM - 3:00 PM</strong></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- In-Modal Dynamic Focus Header -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="p-2 bg-densifi-emerald/10 text-densifi-emerald rounded-lg text-lg">📊</span>
+            <div>
+              <p class="text-xs font-bold text-slate-900" id="modal-focus-title">Focused Branch View: Biba Klang</p>
+              <p class="text-[11px] text-slate-500" id="modal-focus-desc">Showing graph telemetry comparison with Klang line highlighted</p>
+            </div>
+          </div>
+          <button onclick="setMainStoreFromModal()" class="bg-densifi-dark hover:bg-slate-800 text-densifi-emerald font-bold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+            Set as Main Active Outlet
+          </button>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 space-y-3">
+          <h4 class="text-xs font-bold text-slate-700 uppercase">3-Branch Direct Footfall Comparison</h4>
+          <div class="relative h-64 w-full">
+            <canvas id="compareMultiChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= INTERACTIVE INSPECTION MODAL DRAWER ================= -->
+  <div id="details-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-200">
+      
+      <!-- Modal Header -->
+      <div id="modal-header-bg" class="bg-densifi-dark text-white p-6 flex justify-between items-start border-b border-slate-800">
+        <div>
+          <span id="modal-badge" class="text-[10px] uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-md bg-densifi-emerald text-slate-950">DENSIFI INSPECTOR</span>
+          <h3 id="modal-title" class="text-lg font-bold mt-2">Inspection Details</h3>
+          <p id="modal-subtitle" class="text-xs text-slate-400 mt-0.5">Reference ID: #SYS-8821</p>
+        </div>
+        <button onclick="closeModal()" class="text-white/70 hover:text-white p-1 rounded-lg bg-black/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body Content -->
+      <div id="modal-body" class="p-6 space-y-4 text-xs text-slate-600 max-h-[70vh] overflow-y-auto">
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+        <button onclick="closeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs transition">Close</button>
+        <button id="modal-primary-btn" onclick="modalPrimaryAction()" class="bg-densifi-dark hover:bg-slate-800 text-densifi-emerald border border-densifi-emerald/40 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm">Execute Action</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC ENGINE -->
+  <script>
+    // Stores Data & State
+    const storeMetrics = {
+      STORE_KLANG: { name: 'Biba Klang', total: 142, occupancy: 18, max: 50, ip: '192.168.1.101', temp: '41.2°C', status: 'ONLINE', hourly: [12, 19, 28, 35, 22, 18, 14, 8] },
+      STORE_BRICKFIELDS: { name: 'Biba Brickfields', total: 118, occupancy: 12, max: 40, ip: '192.168.1.102', temp: '43.8°C', status: 'ONLINE', hourly: [8, 14, 20, 29, 18, 15, 10, 4] },
+      STORE_1UTAMA: { name: 'Biba 1 Utama', total: 128, occupancy: 15, max: 60, ip: '192.168.1.103', temp: '39.5°C', status: 'ONLINE', hourly: [10, 16, 24, 30, 20, 16, 8, 4] }
+    };
+
+    let selectedStore = 'STORE_KLANG';
+    let modalSelectedBranch = 'STORE_KLANG';
+
+    const logData = [
+      { id: 'EVT-1094', store: 'Biba Klang', time: '16:32:05', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80', sensor: 'PIR GPIO 17' },
+      { id: 'EVT-1093', store: 'Biba Brickfields', time: '16:28:12', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80', sensor: 'PIR GPIO 17' },
+      { id: 'EVT-1092', store: 'Biba 1 Utama', time: '16:15:44', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80', sensor: 'PIR GPIO 17' }
+    ];
+
+    const errorLogs = [
+      { id: 'ERR-501', time: '16:20:11', category: 'Hardware / Sensor', problem: 'Camera capture timeout on CSI Port 0', severity: 'HIGH', status: 'PENDING', action: 'Check CSI ribbon cable & power supply', detail: 'V4L2 driver reported buffer underflow. Raspberry Pi camera module failed to stream frame within 2000ms.' },
+      { id: 'ERR-302', time: '15:45:02', category: 'Network / Connectivity', problem: 'WebSocket client connection dropped abruptly', severity: 'MEDIUM', status: 'RESOLVED', action: 'Re-establish socket pipeline', detail: 'Heartbeat ping missed for 3 consecutive intervals. Node socket reconnected successfully.' },
+      { id: 'ERR-204', time: 'Yesterday 18:12', category: 'PIR Sensor', problem: 'PIR false trigger double-counting on doorway entrance', severity: 'MEDIUM', status: 'RESOLVED', action: 'Increase PIR debounce buffer to 1.5s', detail: 'Debounce timing was set too low at 0.2s resulting in duplicate trigger events per passing visitor.' }
+    ];
+
+    let activeModalErrorId = null;
+    let activeModalStoreKey = null;
+
+    let dashChartInstance = null;
+    let shareChartInstance = null;
+    let analyticsChartInstance = null;
+    let compareChartInstance = null;
+    let currentAnalyticsMode = 'weekly';
+
+    const analyticsDatasets = {
+      daily: {
+        labels: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
+        data: [8, 24, 48, 52, 68, 74, 45, 19],
+        label: 'Daily Hourly Footfall Count',
+        subtitle: '24-hour detailed customer traffic breakdown for selected date'
+      },
+      weekly: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        data: [140, 180, 210, 190, 290, 340, 310],
+        label: 'Weekly Day-by-Day Footfall Count',
+        subtitle: 'Weekly customer trends and peak traffic days across Biba locations'
+      },
+      monthly: {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        data: [1250, 1420, 1680, 1590],
+        label: 'Monthly Week-by-Week Footfall Count',
+        subtitle: 'Monthly footfall distribution breakdown by operating week'
+      },
+      yearly: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        data: [4200, 3900, 4800, 5100, 5600, 5200, 6100, 5900, 6400, 6800, 7200, 8100],
+        label: 'Yearly Month-by-Month Footfall Count',
+        subtitle: 'Year-over-year annual footfall performance and seasonal trend overview'
+      }
+    };
+
+    // TOAST SYSTEM
+    function showToast(title, message) {
+      const toast = document.getElementById('toast-notification');
+      document.getElementById('toast-title').innerText = title;
+      document.getElementById('toast-message').innerText = message;
+      
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // LOGIN SYSTEM
+    function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-user').value;
+
+      selectedStore = document.getElementById('store-filter').value || 'STORE_KLANG';
+      
+      document.getElementById('active-staff-name').innerText = `Admin: ${user}`;
+      document.getElementById('active-staff-branch').innerText = storeMetrics[selectedStore]?.name || 'All Outlets';
+
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-wrapper').classList.remove('hidden');
+
+      initCharts();
+      renderLogs();
+      renderErrors();
+      updateDashboardUI();
+      showToast('Node Session Established', `Logged in as ${user}`);
+    }
+
+    function logout() {
+      document.getElementById('app-wrapper').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+
+    // NAVIGATION SYSTEM
+    function navigateTo(pageId) {
+      const pageTitles = {
+        dashboard: 'Overview Dashboard',
+        compare: 'Multi-Branch Comparison View',
+        camera: 'Live Doorway Stream',
+        logs: 'Audit Snapshot Logs',
+        analytics: 'Analytics & Insights',
+        hardware: 'Hardware Telemetry & PIR',
+        errors: 'System Fault & Error Logs'
+      };
+
+      document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`page-${pageId}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('bg-densifi-emerald', 'text-white', 'font-bold');
+        btn.classList.add('text-slate-400', 'hover:bg-slate-800');
+      });
+
+      const activeNav = document.getElementById(`nav-${pageId}`);
+      if (activeNav) {
+        activeNav.classList.add('bg-densifi-emerald', 'text-white', 'font-bold');
+        activeNav.classList.remove('text-slate-400');
+      }
+
+      document.getElementById('page-title').innerText = pageTitles[pageId] || 'Dashboard';
+      
+      if (pageId === 'camera') {
+        const storeName = selectedStore !== 'ALL' ? storeMetrics[selectedStore].name : 'All Outlets Combined';
+        document.getElementById('cam-title').innerText = `Boutique Entrance Overhead Camera (${storeName})`;
+      }
+    }
+
+    // FILTER & METRICS UPDATE
+    function filterStoreData(storeKey) {
+      selectedStore = storeKey;
+      document.getElementById('store-filter').value = storeKey;
+      document.getElementById('active-staff-branch').innerText = storeMetrics[storeKey]?.name || 'All Outlets';
+      updateDashboardUI();
+      showToast('Store Filter Updated', `Active outlet switched to: ${storeMetrics[storeKey]?.name || 'All Outlets'}`);
+    }
+
+    function updateDashboardUI() {
+      // Calculate totals
+      const totalKlang = storeMetrics.STORE_KLANG.total;
+      const totalBrick = storeMetrics.STORE_BRICKFIELDS.total;
+      const total1U = storeMetrics.STORE_1UTAMA.total;
+      const grandTotal = totalKlang + totalBrick + total1U;
+
+      document.getElementById('dash-company-total').innerText = grandTotal;
+
+      // Calculate Top Branch
+      let topBranch = 'Biba Klang';
+      let maxVal = totalKlang;
+      if (totalBrick > maxVal) { topBranch = 'Biba Brickfields'; maxVal = totalBrick; }
+      if (total1U > maxVal) { topBranch = 'Biba 1 Utama'; maxVal = total1U; }
+
+      document.getElementById('top-branch-name').innerText = topBranch;
+      document.getElementById('top-branch-count').innerText = `${maxVal} visits`;
+
+      // Individual Store Cards Data
+      ['STORE_KLANG', 'STORE_BRICKFIELDS', 'STORE_1UTAMA'].forEach(key => {
+        const s = storeMetrics[key];
+        const elTotal = document.getElementById(`card-${key}-total`);
+        const elOcc = document.getElementById(`card-${key}-occ`);
+        const elCompTotal = document.getElementById(`compare-${key}-total`);
+        const elCompOcc = document.getElementById(`compare-${key}-occ`);
+
+        if (elTotal) elTotal.innerText = s.total;
+        if (elOcc) elOcc.innerText = s.occupancy;
+        if (elCompTotal) elCompTotal.innerText = s.total;
+        if (elCompOcc) elCompOcc.innerText = `${s.occupancy} / ${s.max}`;
+
+        // Highlight selected card
+        const card = document.getElementById(`card-${key}`);
+        if (card) {
+          if (selectedStore === key) {
+            card.classList.add('border-2', 'border-densifi-emerald', 'bg-emerald-50/20');
+            card.classList.remove('border-slate-200');
+          } else {
+            card.classList.remove('border-2', 'border-densifi-emerald', 'bg-emerald-50/20');
+            card.classList.add('border', 'border-slate-200');
+          }
+        }
+      });
+
+      // KPI Bar Main Card
+      if (selectedStore === 'ALL') {
+        const occ = storeMetrics.STORE_KLANG.occupancy + storeMetrics.STORE_BRICKFIELDS.occupancy + storeMetrics.STORE_1UTAMA.occupancy;
+        document.getElementById('dash-total-title').innerText = 'Combined Store Footfall';
+        document.getElementById('dash-total').innerText = grandTotal;
+        document.getElementById('dash-occupancy').innerText = occ;
+        document.getElementById('dash-max-label').innerText = 'Capacity: 150 Total';
+        document.getElementById('dash-occupancy-bar').style.width = `${Math.min((occ / 150) * 100, 100)}%`;
+      } else {
+        const store = storeMetrics[selectedStore];
+        document.getElementById('dash-total-title').innerText = `${store.name} Today`;
+        document.getElementById('dash-total').innerText = store.total;
+        document.getElementById('dash-occupancy').innerText = store.occupancy;
+        document.getElementById('dash-max-label').innerText = `Capacity: ${store.max}`;
+        document.getElementById('dash-occupancy-bar').style.width = `${Math.min((store.occupancy / store.max) * 100, 100)}%`;
+      }
+
+      // Live Camera Stream Counts
+      const currentStreamStore = selectedStore !== 'ALL' ? storeMetrics[selectedStore] : storeMetrics.STORE_KLANG;
+      document.getElementById('cam-count-today').innerText = currentStreamStore.total;
+      document.getElementById('cam-count-occ').innerText = currentStreamStore.occupancy;
+
+      updateCharts();
+    }
+
+    // LIVE INTERACTIVE SIMULATION
+    function simulateLiveVisitor(type = 'entry') {
+      const storeKey = selectedStore !== 'ALL' ? selectedStore : 'STORE_KLANG';
+      const store = storeMetrics[storeKey];
+
+      if (type === 'entry') {
+        store.total += 1;
+        store.occupancy += 1;
+        store.hourly[store.hourly.length - 1] += 1;
+        
+        // Add to logs
+        const now = new Date();
+        const timeStr = now.toTimeString().split(' ')[0];
+        logData.unshift({
+          id: `EVT-${Math.floor(1000 + Math.random() * 9000)}`,
+          store: store.name,
+          time: timeStr,
+          img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+          sensor: 'PIR GPIO 17'
+        });
+        renderLogs();
+
+        showToast('Live Entry Detection', `+1 visitor entered ${store.name}`);
+      } else {
+        if (store.occupancy > 0) store.occupancy -= 1;
+        showToast('Live Exit Detection', `-1 visitor exited ${store.name}`);
+      }
+
+      // Trigger detection box pulse on live stream
+      const box = document.getElementById('cam-detection-box');
+      box.classList.remove('hidden');
+      setTimeout(() => box.classList.add('hidden'), 1200);
+
+      updateDashboardUI();
+    }
+
+    // STORE DETAILS INSPECTION MODAL
+    function openStoreDetails(storeKey) {
+      if (storeKey === 'ALL') storeKey = 'STORE_KLANG';
+      const store = storeMetrics[storeKey];
+      activeModalStoreKey = storeKey;
+
+      document.getElementById('modal-badge').innerText = 'DENSIFI NODE TELEMETRY';
+      document.getElementById('modal-title').innerText = `📍 ${store.name} Node Diagnostics`;
+      document.getElementById('modal-subtitle').innerText = `IP: ${store.ip} | Sensor Temp: ${store.temp} | Status: ${store.status}`;
+
+      document.getElementById('modal-body').innerHTML = `
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Today Total Visitors</span>
+              <strong class="text-xl text-slate-900 font-extrabold">${store.total}</strong>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Current Occupancy</span>
+              <strong class="text-xl text-emerald-600 font-extrabold">${store.occupancy} / ${store.max}</strong>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-900 text-slate-200 rounded-xl space-y-2 font-mono text-[11px]">
+            <p class="text-densifi-emerald font-bold">HARDWARE SYSTEM HEALTH</p>
+            <p>• PIR Motion Sensor GPIO: PIN 17 [NORMAL]</p>
+            <p>• CSI Vision Module: 1080p @ 30FPS [ACTIVE]</p>
+            <p>• Core Temperature: ${store.temp}</p>
+            <p>• Gateway Node Status: ${store.status}</p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modal-primary-btn').innerText = 'Select as Active Outlet';
+      document.getElementById('details-modal').classList.remove('hidden');
+    }
+
+    // AUDIT LOG INSPECTION
+    function openLogDetails(logId) {
+      const log = logData.find(l => l.id === logId);
+      if (!log) return;
+      activeModalStoreKey = null;
+
+      document.getElementById('modal-badge').innerText = 'AUDIT SNAPSHOT VERIFICATION';
+      document.getElementById('modal-title').innerText = `Event Log: ${log.id}`;
+      document.getElementById('modal-subtitle').innerText = `Branch: ${log.store} | Timestamp: ${log.time}`;
+
+      document.getElementById('modal-body').innerHTML = `
+        <div class="space-y-3">
+          <div class="h-48 bg-slate-950 rounded-xl overflow-hidden relative border border-slate-700">
+            <img src="${log.img}" class="w-full h-full object-cover opacity-90">
+            <div class="absolute top-2 left-2 bg-black/80 text-densifi-emerald text-[10px] px-2 py-1 rounded font-mono">CONFIDENCE: 98.4%</div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+            <p><strong>Trigger Source:</strong> ${log.sensor}</p>
+            <p><strong>Tripwire Co-ordinates:</strong> X:120, Y:240</p>
+            <p><strong>Status:</strong> Verified Entry Event</p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modal-primary-btn').innerText = 'Close Inspection';
+      document.getElementById('details-modal').classList.remove('hidden');
+    }
+
+    // ERROR LOG INSPECTION
+    function openErrorDetails(id) {
+      const err = errorLogs.find(e => e.id === id);
+      if (!err) return;
+      activeModalErrorId = id;
+      activeModalStoreKey = null;
+
+      document.getElementById('modal-title').innerText = `Fault ID: ${err.id}`;
+      document.getElementById('modal-subtitle').innerText = `Category: ${err.category} | Status: ${err.status}`;
+      document.getElementById('modal-badge').innerText = 'SYSTEM FAULT INSPECTOR';
+
+      document.getElementById('modal-body').innerHTML = `
+        <div class="space-y-3">
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex justify-between items-start">
+            <div>
+              <p class="font-bold text-amber-700">${err.problem}</p>
+              <p class="text-[10px] text-slate-500 mt-1">Logged at ${err.time} | Category: ${err.category}</p>
+            </div>
+            <span class="${err.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} text-[10px] font-extrabold px-2 py-0.5 rounded-md">${err.status}</span>
+          </div>
+          <div>
+            <p class="font-bold text-slate-800 mb-1">Root Cause Exception Detail</p>
+            <p class="font-mono bg-slate-900 text-slate-200 p-3 rounded-xl text-[11px]">${err.detail}</p>
+          </div>
+          <div>
+            <p class="font-bold text-slate-800 mb-1">Recommended / Applied Resolution</p>
+            <p class="bg-slate-100 border border-slate-200 p-3 rounded-xl text-slate-700 text-xs">${err.action}</p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modal-primary-btn').innerText = err.status === 'RESOLVED' ? 'Reopen Issue' : 'Mark as Done (Resolved)';
+      document.getElementById('details-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      activeModalErrorId = null;
+      activeModalStoreKey = null;
+      document.getElementById('details-modal').classList.add('hidden');
+    }
+
+    function modalPrimaryAction() {
+      if (activeModalErrorId) {
+        toggleErrorStatus(activeModalErrorId);
+      } else if (activeModalStoreKey) {
+        filterStoreData(activeModalStoreKey);
+      }
+      closeModal();
+    }
+
+    // CHART.JS INITIALIZATION
+    function initCharts() {
+      const ctxDash = document.getElementById('dashChart').getContext('2d');
+      dashChartInstance = new Chart(ctxDash, {
+        type: 'bar',
+        data: {
+          labels: ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM'],
+          datasets: [{
+            label: 'Hourly Visitors',
+            data: storeMetrics.STORE_KLANG.hourly,
+            backgroundColor: '#10B981',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      const ctxShare = document.getElementById('shareChart').getContext('2d');
+      shareChartInstance = new Chart(ctxShare, {
+        type: 'doughnut',
+        data: {
+          labels: ['Biba Klang', 'Biba Brickfields', 'Biba 1 Utama'],
+          datasets: [{
+            data: [storeMetrics.STORE_KLANG.total, storeMetrics.STORE_BRICKFIELDS.total, storeMetrics.STORE_1UTAMA.total],
+            backgroundColor: ['#10B981', '#3B82F6', '#8B5CF6']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      const ctxAnalytics = document.getElementById('analyticsChart').getContext('2d');
+      const currentConfig = analyticsDatasets[currentAnalyticsMode];
+      analyticsChartInstance = new Chart(ctxAnalytics, {
+        type: 'line',
+        data: {
+          labels: currentConfig.labels,
+          datasets: [{
+            label: currentConfig.label,
+            data: currentConfig.data,
+            borderColor: '#10B981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function openBranchCompareModal() {
+      document.getElementById('compare-modal').classList.remove('hidden');
+      setTimeout(initCompareChart, 100);
+    }
+
+    function closeCompareModal() {
+      document.getElementById('compare-modal').classList.add('hidden');
+    }
+
+    function selectModalBranch(storeKey) {
+      modalSelectedBranch = storeKey;
+
+      ['STORE_KLANG', 'STORE_BRICKFIELDS', 'STORE_1UTAMA'].forEach(key => {
+        const card = document.getElementById(`modal-card-${key}`);
+        if (card) {
+          if (key === storeKey) {
+            card.className = "p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50/20 space-y-2 cursor-pointer transition hover:scale-[1.01]";
+          } else {
+            card.className = "p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2 cursor-pointer transition hover:scale-[1.01]";
+          }
+        }
+      });
+
+      const storeName = storeMetrics[storeKey]?.name || 'Outlet';
+      document.getElementById('modal-focus-title').innerText = `Focused Branch View: ${storeName}`;
+      document.getElementById('modal-focus-desc').innerText = `Showing graph telemetry comparison with ${storeName} line highlighted`;
+
+      updateCompareChartHighlight();
+    }
+
+    function setMainStoreFromModal() {
+      filterStoreData(modalSelectedBranch);
+      closeCompareModal();
+    }
+
+    function initCompareChart() {
+      const ctx = document.getElementById('compareMultiChart').getContext('2d');
+      if (compareChartInstance) compareChartInstance.destroy();
+
+      compareChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM'],
+          datasets: [
+            { label: 'Biba Klang', data: storeMetrics.STORE_KLANG.hourly, borderColor: '#10B981', backgroundColor: 'transparent', borderWidth: 3, tension: 0.3 },
+            { label: 'Biba Brickfields', data: storeMetrics.STORE_BRICKFIELDS.hourly, borderColor: '#F59E0B', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 },
+            { label: 'Biba 1 Utama', data: storeMetrics.STORE_1UTAMA.hourly, borderColor: '#090D16', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+      });
+
+      selectModalBranch(modalSelectedBranch);
+    }
+
+    function updateCompareChartHighlight() {
+      if (!compareChartInstance) return;
+
+      const keys = ['STORE_KLANG', 'STORE_BRICKFIELDS', 'STORE_1UTAMA'];
+      keys.forEach((key, index) => {
+        if (key === modalSelectedBranch) {
+          compareChartInstance.data.datasets[index].borderWidth = 4;
+        } else {
+          compareChartInstance.data.datasets[index].borderWidth = 1.5;
+        }
+      });
+
+      compareChartInstance.update();
+    }
+
+    function setAnalyticsMode(mode) {
+      currentAnalyticsMode = mode;
+
+      document.querySelectorAll('.analytics-mode-btn').forEach(btn => {
+        btn.classList.remove('bg-densifi-emerald', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-600', 'hover:text-slate-900');
+      });
+
+      const activeBtn = document.getElementById(`btn-mode-${mode}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-densifi-emerald', 'text-white', 'shadow-sm');
+        activeBtn.classList.remove('text-slate-600', 'hover:text-slate-900');
+      }
+
+      const config = analyticsDatasets[mode];
+      if (analyticsChartInstance && config) {
+        analyticsChartInstance.data.labels = config.labels;
+        analyticsChartInstance.data.datasets[0].label = config.label;
+        analyticsChartInstance.data.datasets[0].data = config.data;
+        analyticsChartInstance.update();
+
+        document.getElementById('analytics-subtitle').innerText = config.subtitle;
+      }
+    }
+
+    function handleDateChange() {
+      const start = document.getElementById('analytics-start-date').value;
+      const end = document.getElementById('analytics-end-date').value;
+      document.getElementById('analytics-timestamp').innerText = `${start} to ${end}`;
+      
+      if (analyticsChartInstance) {
+        const baseData = analyticsDatasets[currentAnalyticsMode].data;
+        const adjustedData = baseData.map(val => Math.round(val * (0.9 + Math.random() * 0.2)));
+        analyticsChartInstance.data.datasets[0].data = adjustedData;
+        analyticsChartInstance.update();
+      }
+    }
+
+    function resetAnalyticsDates() {
+      document.getElementById('analytics-start-date').value = '2026-10-01';
+      document.getElementById('analytics-end-date').value = '2026-10-19';
+      document.getElementById('analytics-timestamp').innerText = '2026-10-01 to 2026-10-19';
+      setAnalyticsMode(currentAnalyticsMode);
+    }
+
+    // AUDIT LOGS TABLE RENDERER
+    function renderLogs() {
+      const tbody = document.getElementById('logs-table-body');
+      tbody.innerHTML = logData.map(log => `
+        <tr class="hover:bg-slate-50 cursor-pointer transition" onclick="openLogDetails('${log.id}')">
+          <td class="px-6 py-4 font-mono font-bold text-slate-900">${log.id}</td>
+          <td class="px-6 py-4 font-semibold">${log.store}</td>
+          <td class="px-6 py-4 font-mono">${log.time}</td>
+          <td class="px-6 py-4">
+            <img src="${log.img}" class="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-sm" alt="Snapshot">
+          </td>
+          <td class="px-6 py-4 font-mono text-slate-500">${log.sensor}</td>
+          <td class="px-6 py-4 font-bold text-densifi-emerald hover:underline">Inspect →</td>
+        </tr>
+      `).join('');
+    }
+
+    // ERROR LOGS TABLE RENDERER
+    function renderErrors() {
+      const tbody = document.getElementById('errors-table-body');
+      const pendingCount = errorLogs.filter(e => e.status === 'PENDING').length;
+      document.getElementById('error-badge-count').innerText = pendingCount;
+
+      tbody.innerHTML = errorLogs.map(err => `
+        <tr class="hover:bg-amber-50/30 cursor-pointer transition" onclick="openErrorDetails('${err.id}')">
+          <td class="px-6 py-3.5 text-slate-500 font-mono">${err.time}</td>
+          <td class="px-6 py-3.5 font-sans font-semibold text-slate-900">${err.category}</td>
+          <td class="px-6 py-3.5 text-amber-600 font-bold">${err.problem}</td>
+          <td class="px-6 py-3.5">
+            <span class="${err.severity === 'HIGH' ? 'bg-rose-100 text-rose-800' : err.severity === 'MEDIUM' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'} text-[9px] font-extrabold px-2 py-0.5 rounded-md">${err.severity}</span>
+          </td>
+          <td class="px-6 py-3.5">
+            <button onclick="event.stopPropagation(); toggleErrorStatus('${err.id}')" class="${err.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'} text-[10px] font-extrabold px-2.5 py-1 rounded-lg transition hover:scale-105">
+              ${err.status === 'RESOLVED' ? '✓ DONE (RESOLVED)' : '⏳ PENDING'}
+            </button>
+          </td>
+          <td class="px-6 py-3.5 font-sans font-bold text-densifi-emerald hover:underline">Diagnose →</td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleErrorStatus(id) {
+      const err = errorLogs.find(e => e.id === id);
+      if (err) {
+        err.status = err.status === 'RESOLVED' ? 'PENDING' : 'RESOLVED';
+        renderErrors();
+        showToast('Status Updated', `Fault ID ${err.id} marked as ${err.status}`);
+      }
+    }
+
+    function clearErrors() {
+      const pendingOnly = errorLogs.filter(e => e.status === 'PENDING');
+      errorLogs.length = 0;
+      errorLogs.push(...pendingOnly);
+      renderErrors();
+      showToast('Logs Cleaned', 'Resolved logs cleared from active view.');
+    }
+
+    function exportCSV() {
+      showToast('Export Initiated', 'Footfall audit records exported to CSV.');
+    }
+  </script>
+</body>
+</html>
